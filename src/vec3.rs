@@ -1,5 +1,18 @@
+use std::fmt;
 use std::ops;
+
+#[derive(Copy, Clone)]
 pub struct Vec3(pub f64, pub f64, pub f64);
+
+impl fmt::Display for Vec3 {
+    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let x = self.x();
+        let y = self.y();
+        let z = self.z();
+        print!("<Vec3: {x} {y} {z}>");
+        Ok(())
+    }
+}
 
 impl ops::Index<i32> for Vec3 {
     type Output = f64;
@@ -64,15 +77,15 @@ impl ops::MulAssign<Vec3> for Vec3 {
     }
 }
 
-impl ops::Mul<&Vec3> for f64 {
+impl ops::Mul<Vec3> for f64 {
     type Output = Vec3;
 
-    fn mul(self, rhs: &Vec3) -> Self::Output {
+    fn mul(self, rhs: Vec3) -> Self::Output {
         Vec3(self * rhs[0], self * rhs[1], self * rhs[2])
     }
 }
 
-impl ops::Mul<f64> for &Vec3 {
+impl ops::Mul<f64> for Vec3 {
     type Output = Vec3;
 
     fn mul(self, rhs: f64) -> Self::Output {
@@ -80,7 +93,7 @@ impl ops::Mul<f64> for &Vec3 {
     }
 }
 
-impl ops::Div<f64> for &Vec3 {
+impl ops::Div<f64> for Vec3 {
     type Output = Vec3;
 
     fn div(self, rhs: f64) -> Self::Output {
@@ -100,7 +113,7 @@ fn cross(u: Vec3, v: Vec3) -> Vec3 {
     )
 }
 
-fn unit_vector(v: &Vec3) -> Vec3 {
+pub fn unit_vector(v: Vec3) -> Vec3 {
     v / v.length()
 }
 
