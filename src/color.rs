@@ -1,4 +1,4 @@
-use crate::Vec3;
+use crate::vec3::Vec3;
 pub type Color = Vec3;
 
 pub(crate) fn make_color(r: f64, g: f64, b: f64) -> Color {
