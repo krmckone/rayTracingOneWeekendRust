@@ -126,7 +126,11 @@ impl Vec3 {
     }
 }
 
-type Point3 = Vec3;
+pub type Point3 = Vec3;
+
+pub fn make_point(x: f64, y: f64, z: f64) -> Point3 {
+    Vec3(x, y, z)
+}
 
 #[cfg(test)]
 mod tests {
