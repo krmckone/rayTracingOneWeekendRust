@@ -12,7 +12,7 @@ mod vec3;
 fn ray_color(r: &ray::Ray) -> color::Color {
     let unit_direction = vec3::unit_vector(r.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
-    (1.0 - a) * make_color(1.0, 1.0, 1.0) + a * make_color(1.0, 1.0, 1.0)
+    (1.0 - a) * make_color(1.0, 1.0, 1.0) + a * make_color(0.5, 0.7, 1.0)
 }
 
 fn main() {
@@ -55,7 +55,6 @@ fn main() {
                 direction: ray_direction,
             };
             let pixel_color = ray_color(&r);
-            println!("{pixel_color}");
             color::write_color(pixel_color);
             i += 1;
         }

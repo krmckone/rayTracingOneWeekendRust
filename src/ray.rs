@@ -10,7 +10,7 @@ impl Ray {
     }
 
     pub fn direction(&self) -> Vec3 {
-        self.orgin
+        self.direction
     }
 
     pub fn at(&self, t: f64) -> Point3 {
