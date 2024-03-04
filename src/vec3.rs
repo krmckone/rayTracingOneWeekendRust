@@ -101,7 +101,7 @@ impl ops::Div<f64> for Vec3 {
     }
 }
 
-fn dot(u: Vec3, v: Vec3) -> f64 {
+pub fn dot(u: Vec3, v: Vec3) -> f64 {
     u[0] * v[0] + u[1] * v[1] + u[2] * v[2]
 }
 
