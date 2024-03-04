@@ -42,7 +42,7 @@ fn main() {
     // Camera Configuration
     let focal_length = 1.0;
     let viewport_height = 2.0;
-    let viewport_width = viewport_height * (IMAGE_WIDTH / image_height) as f64;
+    let viewport_width = viewport_height * (IMAGE_WIDTH as f64 / image_height as f64);
     let camera_center = vec3::make_point(0.0, 0.0, 0.0);
 
     let viewport_u = Vec3(viewport_width, 0.0, 0.0);
