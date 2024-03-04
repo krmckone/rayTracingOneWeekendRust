@@ -7,7 +7,11 @@ use crate::{
 };
 
 mod color;
+mod hit_record;
+mod hittable;
+mod hittable_list;
 mod ray;
+mod sphere;
 mod vec3;
 
 fn hit_sphere(center: Point3, radius: f64, r: &Ray) -> f64 {
