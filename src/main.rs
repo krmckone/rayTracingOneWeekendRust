@@ -1,6 +1,6 @@
 use camera::Camera;
 
-use crate::{hittable_list::HittableList, ray::Ray, sphere::Sphere, vec3::make_point, vec3::Vec3};
+use crate::{hittable_list::HittableList, sphere::Sphere, vec3::make_point};
 
 mod camera;
 mod color;
@@ -31,6 +31,7 @@ fn main() {
 
     camera.aspect_ratio = 16.0 / 9.0;
     camera.image_width = 400;
+    camera.samples_per_pixel = 100;
 
     camera.render(&world);
 }
