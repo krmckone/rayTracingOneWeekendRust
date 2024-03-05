@@ -1,4 +1,5 @@
 use crate::interval;
+use crate::rtweekend::random_f64;
 use crate::{color::Color, hittable::Hittable, ray::Ray};
 use std::f64::INFINITY;
 
@@ -12,6 +13,7 @@ use crate::vec3::{make_point, unit_vector};
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
+    pub samples_per_pixel: i32,
     image_height: i32,
     center: Point3,
     pixel00_loc: Point3,
@@ -29,6 +31,7 @@ impl Default for Camera {
             pixel00_loc: make_point(0.0, 0.0, 0.0),
             pixel_delta_u: Vec3(0.0, 0.0, 0.0),
             pixel_delta_v: Vec3(0.0, 0.0, 0.0),
+            samples_per_pixel: 10,
         }
     }
 }
@@ -74,19 +77,28 @@ impl Camera {
             eprint!("Scanlines remaining: {lines_remaining}\r");
             let mut i = 0;
             while i < self.image_width {
-                let pixel_center = self.pixel00_loc
-                    + (i as f64 * self.pixel_delta_u)
-                    + (j as f64 * self.pixel_delta_v);
-                let ray_direction = pixel_center - self.center;
-                let r = Ray {
-                    orgin: self.center,
-                    direction: ray_direction,
-                };
-                let pixel_color = self.ray_color(r, world);
-                write_color(pixel_color);
+                let mut pixel_color = make_color(0.0, 0.0, 0.0);
+                let mut sample = 0;
+                while sample < self.samples_per_pixel {
+                    let r = self.get_ray(i, j);
+                    pixel_color += self.ray_color(r, world);
+                    sample += 1;
+                }
+                write_color(pixel_color, self.samples_per_pixel);
                 i += 1;
             }
             j += 1;
+        }
+    }
+
+    fn get_ray(&self, i: i32, j: i32) -> Ray {
+        let pixel_center =
+            self.pixel00_loc + (i as f64 * self.pixel_delta_u) + (j as f64 * self.pixel_delta_v);
+        let pixel_sample = pixel_center + self.pixel_sample_square();
+        let ray_direction = pixel_sample - self.center;
+        Ray {
+            orgin: self.center,
+            direction: ray_direction,
         }
     }
 
@@ -99,5 +111,11 @@ impl Camera {
         let unit_direction = unit_vector(r.direction());
         let a = 0.5 * (unit_direction.y() + 1.0);
         return (1.0 - a) * make_color(1.0, 1.0, 1.0) + a * make_color(0.5, 0.7, 1.0);
+    }
+
+    fn pixel_sample_square(&self) -> Vec3 {
+        let px = -0.5 * random_f64();
+        let py = -0.5 + random_f64();
+        (px * self.pixel_delta_u) + (py * self.pixel_delta_v)
     }
 }
