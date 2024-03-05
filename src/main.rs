@@ -1,33 +1,31 @@
-use color::make_color;
-use vec3::make_point;
+use std::f64::INFINITY;
 
-use crate::{
-    ray::Ray,
-    vec3::{Point3, Vec3},
-};
+use color::make_color;
+use hit_record::HitRecord;
+use hittable::Hittable;
+use vec3::{make_point, unit_vector};
+
+use crate::{hittable_list::HittableList, ray::Ray, sphere::Sphere, vec3::Vec3};
 
 mod color;
+mod hit_record;
+mod hittable;
+mod hittable_list;
+mod interval;
 mod ray;
+mod rtweekend;
+mod sphere;
 mod vec3;
 
-fn hit_sphere(center: Point3, radius: f64, r: Ray) -> bool {
-    let oc = r.origin() - center;
-    let a = vec3::dot(r.direction(), r.direction());
-    let b = 2.0 * vec3::dot(oc, r.direction());
-    let c = vec3::dot(oc, oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-
-    discriminant >= 0.0
-}
-
-fn ray_color(r: ray::Ray) -> color::Color {
-    let unit_direction = vec3::unit_vector(r.direction());
-    let a = 0.5 * (unit_direction.y() + 1.0);
-
-    if hit_sphere(make_point(0.0, 0.0, -1.0), 0.5, r) {
-        return make_color(1.0, 0.0, 0.0);
+fn ray_color(r: ray::Ray, world: &dyn Hittable) -> color::Color {
+    let rec = &mut HitRecord::default();
+    if world.hit(&r, interval::new(0.0, INFINITY), rec) {
+        return 0.5 * (rec.normal + make_color(1.0, 1.0, 1.0));
     }
-    (1.0 - a) * make_color(1.0, 1.0, 1.0) + a * make_color(0.5, 0.7, 1.0)
+
+    let unit_direction = unit_vector(r.direction());
+    let a = 0.5 * (unit_direction.y() + 1.0);
+    return (1.0 - a) * make_color(1.0, 1.0, 1.0) + a * make_color(0.5, 0.7, 1.0);
 }
 
 fn main() {
@@ -38,6 +36,19 @@ fn main() {
 
     let mut image_height: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i32;
     image_height = if image_height < 1 { 1 } else { image_height };
+
+    // World Setup
+    let mut world = HittableList {
+        objects: Vec::new(),
+    };
+    world.add(Box::new(Sphere {
+        center: make_point(0.0, 0.0, -1.0),
+        radius: 0.5,
+    }));
+    world.add(Box::new(Sphere {
+        center: make_point(0.0, -100.5, -1.0),
+        radius: 100.0,
+    }));
 
     // Camera Configuration
     let focal_length = 1.0;
@@ -69,7 +80,7 @@ fn main() {
                 orgin: camera_center,
                 direction: ray_direction,
             };
-            let pixel_color = ray_color(r);
+            let pixel_color = ray_color(r, &world);
             color::write_color(pixel_color);
             i += 1;
         }

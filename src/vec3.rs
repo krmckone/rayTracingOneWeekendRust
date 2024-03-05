@@ -130,11 +130,11 @@ impl Vec3 {
         self[2]
     }
 
-    fn length(&self) -> f64 {
+    pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
 
-    fn length_squared(&self) -> f64 {
+    pub fn length_squared(&self) -> f64 {
         self[0] * self[0] + self[1] * self[1] + self[2] * self[2]
     }
 }
@@ -143,6 +143,10 @@ pub type Point3 = Vec3;
 
 pub fn make_point(x: f64, y: f64, z: f64) -> Point3 {
     Vec3(x, y, z)
+}
+
+pub fn zero_vector() -> Vec3 {
+    Vec3(0.0, 0.0, 0.0)
 }
 
 #[cfg(test)]
