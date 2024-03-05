@@ -5,15 +5,16 @@ use std::f64::INFINITY;
 
 use crate::color::{make_color, write_color};
 use crate::hit_record::HitRecord;
-use crate::vec3::Point3;
 use crate::vec3::Vec3;
 use crate::vec3::{make_point, unit_vector};
+use crate::vec3::{random_on_hemisphere, Point3};
 // TODO: Clean up the imports
 
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
     pub samples_per_pixel: i32,
+    pub max_depth: i32,
     image_height: i32,
     center: Point3,
     pixel00_loc: Point3,
@@ -32,6 +33,7 @@ impl Default for Camera {
             pixel_delta_u: Vec3(0.0, 0.0, 0.0),
             pixel_delta_v: Vec3(0.0, 0.0, 0.0),
             samples_per_pixel: 10,
+            max_depth: 10,
         }
     }
 }
@@ -81,7 +83,7 @@ impl Camera {
                 let mut sample = 0;
                 while sample < self.samples_per_pixel {
                     let r = self.get_ray(i, j);
-                    pixel_color += self.ray_color(r, world);
+                    pixel_color += self.ray_color(r, self.max_depth, world);
                     sample += 1;
                 }
                 write_color(pixel_color, self.samples_per_pixel);
@@ -102,10 +104,22 @@ impl Camera {
         }
     }
 
-    fn ray_color(&self, r: Ray, world: &dyn Hittable) -> Color {
+    fn ray_color(&self, r: Ray, depth: i32, world: &dyn Hittable) -> Color {
         let rec = &mut HitRecord::default();
-        if world.hit(&r, interval::new(0.0, INFINITY), rec) {
-            return 0.5 * (rec.normal + make_color(1.0, 1.0, 1.0));
+        if depth <= 0 {
+            return make_color(0.0, 0.0, 0.0);
+        }
+        if world.hit(&r, interval::new(0.001, INFINITY), rec) {
+            let direction = random_on_hemisphere(rec.normal);
+            return 0.5
+                * self.ray_color(
+                    Ray {
+                        orgin: rec.p,
+                        direction,
+                    },
+                    depth - 1,
+                    world,
+                );
         }
 
         let unit_direction = unit_vector(r.direction());
