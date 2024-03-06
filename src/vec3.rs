@@ -140,6 +140,11 @@ impl Vec3 {
     pub fn length_squared(&self) -> f64 {
         self[0] * self[0] + self[1] * self[1] + self[2] * self[2]
     }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        (f64::abs(self[0]) < s) && (f64::abs(self[1]) < s) && (f64::abs(self[2]) < s)
+    }
 }
 
 pub fn random() -> Vec3 {
@@ -174,6 +179,10 @@ pub fn random_on_hemisphere(normal: Vec3) -> Vec3 {
     } else {
         -on_unit_sphere
     }
+}
+
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    v - 2.0 * dot(v, n) * n
 }
 
 pub type Point3 = Vec3;

@@ -1,13 +1,13 @@
-use crate::interval;
 use crate::rtweekend::random_f64;
+use crate::{color, interval};
 use crate::{color::Color, hittable::Hittable, ray::Ray};
 use std::f64::INFINITY;
 
 use crate::color::{make_color, write_color};
 use crate::hit_record::HitRecord;
-use crate::vec3::{random_unit, Vec3};
-use crate::vec3::{make_point, unit_vector};
+use crate::vec3::{make_point, unit_vector, zero_vector};
 use crate::vec3::{random_on_hemisphere, Point3};
+use crate::vec3::{random_unit, Vec3};
 // TODO: Clean up the imports
 
 pub struct Camera {
@@ -99,27 +99,26 @@ impl Camera {
         let pixel_sample = pixel_center + self.pixel_sample_square();
         let ray_direction = pixel_sample - self.center;
         Ray {
-            orgin: self.center,
+            origin: self.center,
             direction: ray_direction,
         }
     }
 
     fn ray_color(&self, r: Ray, depth: i32, world: &dyn Hittable) -> Color {
-        let rec = &mut HitRecord::default();
+        let mut rec = HitRecord::default();
         if depth <= 0 {
             return make_color(0.0, 0.0, 0.0);
         }
-        if world.hit(&r, interval::new(0.001, INFINITY), rec) {
-            let direction = rec.normal + random_unit();
-            return 0.5
-                * self.ray_color(
-                    Ray {
-                        orgin: rec.p,
-                        direction,
-                    },
-                    depth - 1,
-                    world,
-                );
+        if world.hit(&r, interval::new(0.001, INFINITY), &mut rec) {
+            let mut scattered = Ray {
+                origin: zero_vector(),
+                direction: zero_vector(),
+            };
+            let mut attenuation = make_color(0.0, 0.0, 0.0);
+            if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
+                return attenuation * self.ray_color(scattered, depth - 1, world);
+            }
+            return make_color(0.0, 0.0, 0.0);
         }
 
         let unit_direction = unit_vector(r.direction());

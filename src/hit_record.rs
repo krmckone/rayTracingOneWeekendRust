@@ -1,11 +1,15 @@
-use crate::{ray, vec3};
+use crate::{
+    color::make_color,
+    material::{make_lambertian, Material},
+    ray, vec3,
+};
 
-#[derive(Copy, Clone)]
 pub struct HitRecord {
     pub p: vec3::Point3,
     pub normal: vec3::Vec3,
     pub t: f64,
     pub front_face: bool,
+    pub mat: Box<dyn Material>,
 }
 
 impl Default for HitRecord {
@@ -15,6 +19,7 @@ impl Default for HitRecord {
             normal: vec3::zero_vector(),
             t: 0.0,
             front_face: false,
+            mat: Box::new(make_lambertian(make_color(0.0, 0.0, 0.0))),
         }
     }
 }
