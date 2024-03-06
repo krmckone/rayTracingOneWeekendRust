@@ -5,7 +5,7 @@ use std::f64::INFINITY;
 
 use crate::color::{make_color, write_color};
 use crate::hit_record::HitRecord;
-use crate::vec3::Vec3;
+use crate::vec3::{random_unit, Vec3};
 use crate::vec3::{make_point, unit_vector};
 use crate::vec3::{random_on_hemisphere, Point3};
 // TODO: Clean up the imports
@@ -110,7 +110,7 @@ impl Camera {
             return make_color(0.0, 0.0, 0.0);
         }
         if world.hit(&r, interval::new(0.001, INFINITY), rec) {
-            let direction = random_on_hemisphere(rec.normal);
+            let direction = rec.normal + random_unit();
             return 0.5
                 * self.ray_color(
                     Ray {
