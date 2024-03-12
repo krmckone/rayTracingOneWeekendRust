@@ -1,8 +1,8 @@
 use crate::{
-    color::Color,
+    color::{make_color, Color},
     hit_record::HitRecord,
     ray::Ray,
-    vec3::{random_unit, reflect, unit_vector},
+    vec3::{random_unit, reflect, refract, unit_vector},
 };
 
 pub trait Material: MaterialClone {
@@ -86,6 +86,41 @@ impl Material for Metal {
     }
 }
 
+#[derive(Clone)]
+pub struct Dielectric {
+    ir: f64,
+}
+
+impl Material for Dielectric {
+    fn scatter(
+        &self,
+        r_in: Ray,
+        rec: &HitRecord,
+        attenuation: &mut Color,
+        scattered: &mut Ray,
+    ) -> bool {
+        *attenuation = make_color(1.0, 1.0, 1.0);
+        let refraction_ratio = if rec.front_face {
+            1.0 / self.ir
+        } else {
+            self.ir
+        };
+
+        let unit_direction = unit_vector(r_in.direction());
+        let refracted = refract(unit_direction, rec.normal, refraction_ratio);
+
+        *scattered = Ray {
+            origin: rec.p,
+            direction: refracted,
+        };
+        true
+    }
+}
+
 pub fn make_metal(albedo: Color, fuzz: f64) -> Metal {
     Metal { albedo, fuzz }
+}
+
+pub fn make_dielectric(ir: f64) -> Dielectric {
+    Dielectric { ir }
 }
