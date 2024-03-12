@@ -1,6 +1,6 @@
 use camera::Camera;
 use color::make_color;
-use material::{make_lambertian, make_metal};
+use material::{make_dielectric, make_lambertian, make_metal};
 use sphere::make_sphere;
 
 use crate::{hittable_list::HittableList, vec3::make_point};
@@ -23,9 +23,10 @@ fn main() {
         objects: Vec::new(),
     };
     let material_ground = make_lambertian(make_color(0.8, 0.8, 0.0));
-    let material_center = make_lambertian(make_color(0.7, 0.3, 0.3));
-    let material_left = make_metal(make_color(0.8, 0.8, 0.8), 0.3);
-    let material_right = make_metal(make_color(0.8, 0.6, 0.2), 1.0);
+    let material_center = make_lambertian(make_color(0.1, 0.2, 0.5));
+    let material_left = make_dielectric(1.5);
+    let material_left_bubble = make_dielectric(1.5);
+    let material_right = make_metal(make_color(0.8, 0.6, 0.2), 0.0);
 
     world.add(Box::new(make_sphere(
         make_point(0.0, -100.5, -1.0),
@@ -41,6 +42,11 @@ fn main() {
         make_point(-1.0, 0.0, -1.0),
         0.5,
         Box::new(material_left),
+    )));
+    world.add(Box::new(make_sphere(
+        make_point(-1.0, 0.0, -1.0),
+        -0.4,
+        Box::new(material_left_bubble),
     )));
     world.add(Box::new(make_sphere(
         make_point(1.0, 0.0, -1.0),
