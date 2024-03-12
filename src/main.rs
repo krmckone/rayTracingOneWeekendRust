@@ -1,7 +1,10 @@
+use std::f64::consts::PI;
+
 use camera::Camera;
 use color::make_color;
 use material::{make_dielectric, make_lambertian, make_metal};
 use sphere::make_sphere;
+use vec3::Vec3;
 
 use crate::{hittable_list::HittableList, vec3::make_point};
 
@@ -22,6 +25,7 @@ fn main() {
     let mut world = HittableList {
         objects: Vec::new(),
     };
+
     let material_ground = make_lambertian(make_color(0.8, 0.8, 0.0));
     let material_center = make_lambertian(make_color(0.1, 0.2, 0.5));
     let material_left = make_dielectric(1.5);
@@ -60,6 +64,11 @@ fn main() {
     camera.image_width = 400;
     camera.samples_per_pixel = 100;
     camera.max_depth = 50;
+
+    camera.vfov = 20;
+    camera.lookfrom = make_point(-2.0, 2.0, 1.0);
+    camera.lookat = make_point(0.0, 0.0, -1.0);
+    camera.vup = Vec3(0.0, 1.0, 0.0);
 
     camera.render(&world);
 }

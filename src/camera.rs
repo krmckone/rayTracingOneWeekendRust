@@ -1,25 +1,31 @@
-use crate::rtweekend::random_f64;
-use crate::{color, interval};
+use crate::interval;
+use crate::rtweekend::{degrees_to_radians, random_f64};
+use crate::vec3::{cross, Point3};
 use crate::{color::Color, hittable::Hittable, ray::Ray};
 use std::f64::INFINITY;
 
 use crate::color::{make_color, write_color};
 use crate::hit_record::HitRecord;
+use crate::vec3::Vec3;
 use crate::vec3::{make_point, unit_vector, zero_vector};
-use crate::vec3::{random_on_hemisphere, Point3};
-use crate::vec3::{random_unit, Vec3};
-// TODO: Clean up the imports
 
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
     pub samples_per_pixel: i32,
     pub max_depth: i32,
+    pub vfov: i32,
+    pub lookfrom: Point3,
+    pub lookat: Point3,
+    pub vup: Vec3,
     image_height: i32,
     center: Point3,
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
+    u: Vec3,
+    v: Vec3,
+    w: Vec3,
 }
 
 impl Default for Camera {
@@ -34,6 +40,13 @@ impl Default for Camera {
             pixel_delta_v: Vec3(0.0, 0.0, 0.0),
             samples_per_pixel: 10,
             max_depth: 10,
+            vfov: 90,
+            lookfrom: make_point(0.0, 0.0, -1.0),
+            lookat: make_point(0.0, 0.0, 0.0),
+            vup: Vec3(0.0, 1.0, 0.0),
+            u: zero_vector(),
+            v: zero_vector(),
+            w: zero_vector(),
         }
     }
 }
@@ -47,25 +60,29 @@ impl Camera {
             self.image_height
         };
 
-        self.center = make_point(0.0, 0.0, 0.0);
+        self.center = self.lookfrom;
 
         // Viewport Dimensions
-        let focal_length = 1.0;
-        let viewport_height = 2.0;
+        let focal_length = (self.lookfrom - self.lookat).length();
+        let theta = degrees_to_radians(self.vfov as f64);
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h * focal_length;
         let viewport_width =
             viewport_height * (self.image_width as f64) / (self.image_height as f64);
 
-        // Vectors to help navigate the viewport during the render
-        let viewport_u = Vec3(viewport_width, 0.0, 0.0);
-        let viewport_v = Vec3(0.0, -viewport_height, 0.0);
+        self.w = unit_vector(self.lookfrom - self.lookat);
+        self.u = unit_vector(cross(self.vup, self.w));
+        self.v = cross(self.w, self.u);
 
-        // Delta vectors for pixel-to-pixel distances
+        let viewport_u = viewport_width * self.u;
+        let viewport_v = viewport_height * -self.v;
+
         self.pixel_delta_u = viewport_u / self.image_width as f64;
         self.pixel_delta_v = viewport_v / self.image_height as f64;
 
         // Find the upper left pixel
         let viewport_upper_left =
-            self.center - Vec3(0.0, 0.0, focal_length) - viewport_u / 2.0 - viewport_v / 2.0;
+            self.center - (focal_length * self.w) - (viewport_u / 2.0) - (viewport_v / 2.0);
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
     }
 
