@@ -25,6 +25,7 @@ fn main() {
     let material_ground = make_lambertian(make_color(0.8, 0.8, 0.0));
     let material_center = make_lambertian(make_color(0.1, 0.2, 0.5));
     let material_left = make_dielectric(1.5);
+    let material_left_bubble = make_dielectric(1.5);
     let material_right = make_metal(make_color(0.8, 0.6, 0.2), 0.0);
 
     world.add(Box::new(make_sphere(
@@ -41,6 +42,11 @@ fn main() {
         make_point(-1.0, 0.0, -1.0),
         0.5,
         Box::new(material_left),
+    )));
+    world.add(Box::new(make_sphere(
+        make_point(-1.0, 0.0, -1.0),
+        -0.4,
+        Box::new(material_left_bubble),
     )));
     world.add(Box::new(make_sphere(
         make_point(1.0, 0.0, -1.0),
