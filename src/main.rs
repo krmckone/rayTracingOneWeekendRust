@@ -24,8 +24,8 @@ fn main() {
     };
     let material_ground = make_lambertian(make_color(0.8, 0.8, 0.0));
     let material_center = make_lambertian(make_color(0.7, 0.3, 0.3));
-    let material_left = make_metal(make_color(0.8, 0.8, 0.8));
-    let material_right = make_metal(make_color(0.8, 0.6, 0.2));
+    let material_left = make_metal(make_color(0.8, 0.8, 0.8), 0.3);
+    let material_right = make_metal(make_color(0.8, 0.6, 0.2), 1.0);
 
     world.add(Box::new(make_sphere(
         make_point(0.0, -100.5, -1.0),
