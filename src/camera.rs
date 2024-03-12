@@ -1,20 +1,20 @@
-use crate::rtweekend::random_f64;
-use crate::{color, interval};
+use crate::interval;
+use crate::rtweekend::{degrees_to_radians, random_f64};
+use crate::vec3::Point3;
 use crate::{color::Color, hittable::Hittable, ray::Ray};
 use std::f64::INFINITY;
 
 use crate::color::{make_color, write_color};
 use crate::hit_record::HitRecord;
+use crate::vec3::Vec3;
 use crate::vec3::{make_point, unit_vector, zero_vector};
-use crate::vec3::{random_on_hemisphere, Point3};
-use crate::vec3::{random_unit, Vec3};
-// TODO: Clean up the imports
 
 pub struct Camera {
     pub aspect_ratio: f64,
     pub image_width: i32,
     pub samples_per_pixel: i32,
     pub max_depth: i32,
+    pub vfov: i32,
     image_height: i32,
     center: Point3,
     pixel00_loc: Point3,
@@ -34,6 +34,7 @@ impl Default for Camera {
             pixel_delta_v: Vec3(0.0, 0.0, 0.0),
             samples_per_pixel: 10,
             max_depth: 10,
+            vfov: 90,
         }
     }
 }
@@ -51,7 +52,9 @@ impl Camera {
 
         // Viewport Dimensions
         let focal_length = 1.0;
-        let viewport_height = 2.0;
+        let theta = degrees_to_radians(self.vfov as f64);
+        let h = (theta / 2.0).tan();
+        let viewport_height = 2.0 * h * focal_length;
         let viewport_width =
             viewport_height * (self.image_width as f64) / (self.image_height as f64);
 

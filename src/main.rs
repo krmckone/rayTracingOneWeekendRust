@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use camera::Camera;
 use color::make_color;
 use material::{make_dielectric, make_lambertian, make_metal};
@@ -22,35 +24,19 @@ fn main() {
     let mut world = HittableList {
         objects: Vec::new(),
     };
-    let material_ground = make_lambertian(make_color(0.8, 0.8, 0.0));
-    let material_center = make_lambertian(make_color(0.1, 0.2, 0.5));
-    let material_left = make_dielectric(1.5);
-    let material_left_bubble = make_dielectric(1.5);
-    let material_right = make_metal(make_color(0.8, 0.6, 0.2), 0.0);
+
+    let r = (PI / 4.0).cos();
+    let material_left = make_lambertian(make_color(0.0, 0.0, 1.0));
+    let material_right = make_lambertian(make_color(1.0, 0.0, 0.0));
 
     world.add(Box::new(make_sphere(
-        make_point(0.0, -100.5, -1.0),
-        100.0,
-        Box::new(material_ground),
-    )));
-    world.add(Box::new(make_sphere(
-        make_point(0.0, 0.0, -1.0),
-        0.5,
-        Box::new(material_center),
-    )));
-    world.add(Box::new(make_sphere(
-        make_point(-1.0, 0.0, -1.0),
-        0.5,
+        make_point(-r, -0.0, -1.0),
+        r,
         Box::new(material_left),
     )));
     world.add(Box::new(make_sphere(
-        make_point(-1.0, 0.0, -1.0),
-        -0.4,
-        Box::new(material_left_bubble),
-    )));
-    world.add(Box::new(make_sphere(
-        make_point(1.0, 0.0, -1.0),
-        0.5,
+        make_point(r, 0.0, -1.0),
+        r,
         Box::new(material_right),
     )));
 
@@ -60,6 +46,7 @@ fn main() {
     camera.image_width = 400;
     camera.samples_per_pixel = 100;
     camera.max_depth = 50;
+    camera.vfov = 90;
 
     camera.render(&world);
 }
