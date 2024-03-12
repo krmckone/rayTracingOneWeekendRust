@@ -63,7 +63,10 @@ pub fn make_lambertian(albedo: Color) -> Lambertian {
 }
 
 #[derive(Clone)]
-pub struct Metal(Color);
+pub struct Metal {
+    albedo: Color,
+    fuzz: f64,
+}
 
 impl Material for Metal {
     fn scatter(
@@ -76,13 +79,13 @@ impl Material for Metal {
         let reflected = reflect(unit_vector(r_in.direction()), rec.normal);
         *scattered = Ray {
             origin: rec.p,
-            direction: reflected,
+            direction: reflected + self.fuzz * random_unit(),
         };
-        *attenuation = self.0;
+        *attenuation = self.albedo;
         true
     }
 }
 
-pub fn make_metal(albedo: Color) -> Metal {
-    Metal(albedo)
+pub fn make_metal(albedo: Color, fuzz: f64) -> Metal {
+    Metal { albedo, fuzz }
 }
