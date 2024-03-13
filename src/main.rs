@@ -70,5 +70,8 @@ fn main() {
     camera.lookat = make_point(0.0, 0.0, -1.0);
     camera.vup = Vec3(0.0, 1.0, 0.0);
 
+    camera.defocus_angle = 10.0;
+    camera.focus_dist = 3.4;
+
     camera.render(&world);
 }

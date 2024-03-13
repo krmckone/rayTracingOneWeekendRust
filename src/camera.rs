@@ -1,6 +1,6 @@
 use crate::interval;
 use crate::rtweekend::{degrees_to_radians, random_f64};
-use crate::vec3::{cross, Point3};
+use crate::vec3::{cross, random_in_unit_disk, Point3};
 use crate::{color::Color, hittable::Hittable, ray::Ray};
 use std::f64::INFINITY;
 
@@ -18,6 +18,8 @@ pub struct Camera {
     pub lookfrom: Point3,
     pub lookat: Point3,
     pub vup: Vec3,
+    pub defocus_angle: f64,
+    pub focus_dist: f64,
     image_height: i32,
     center: Point3,
     pixel00_loc: Point3,
@@ -26,6 +28,8 @@ pub struct Camera {
     u: Vec3,
     v: Vec3,
     w: Vec3,
+    defocus_disk_u: Vec3,
+    defocus_disk_v: Vec3,
 }
 
 impl Default for Camera {
@@ -47,6 +51,10 @@ impl Default for Camera {
             u: zero_vector(),
             v: zero_vector(),
             w: zero_vector(),
+            defocus_angle: 0.0,
+            focus_dist: 10.0,
+            defocus_disk_u: zero_vector(),
+            defocus_disk_v: zero_vector(),
         }
     }
 }
@@ -63,10 +71,9 @@ impl Camera {
         self.center = self.lookfrom;
 
         // Viewport Dimensions
-        let focal_length = (self.lookfrom - self.lookat).length();
         let theta = degrees_to_radians(self.vfov as f64);
         let h = (theta / 2.0).tan();
-        let viewport_height = 2.0 * h * focal_length;
+        let viewport_height = 2.0 * h * self.focus_dist;
         let viewport_width =
             viewport_height * (self.image_width as f64) / (self.image_height as f64);
 
@@ -82,8 +89,13 @@ impl Camera {
 
         // Find the upper left pixel
         let viewport_upper_left =
-            self.center - (focal_length * self.w) - (viewport_u / 2.0) - (viewport_v / 2.0);
+            self.center - (self.focus_dist * self.w) - (viewport_u / 2.0) - (viewport_v / 2.0);
         self.pixel00_loc = viewport_upper_left + 0.5 * (self.pixel_delta_u + self.pixel_delta_v);
+
+        // Defocus disk basis vectors
+        let defocus_radius = (self.focus_dist * degrees_to_radians(self.defocus_angle / 2.0)).tan();
+        self.defocus_disk_u = self.u * defocus_radius;
+        self.defocus_disk_v = self.v * defocus_radius;
     }
 
     pub fn render(&mut self, world: &dyn Hittable) {
@@ -111,14 +123,28 @@ impl Camera {
     }
 
     fn get_ray(&self, i: i32, j: i32) -> Ray {
+        // Random sample camera ray for i,j from the defocus disk
+
         let pixel_center =
             self.pixel00_loc + (i as f64 * self.pixel_delta_u) + (j as f64 * self.pixel_delta_v);
         let pixel_sample = pixel_center + self.pixel_sample_square();
-        let ray_direction = pixel_sample - self.center;
+
+        let ray_origin = if self.defocus_angle <= 0.0 {
+            self.center
+        } else {
+            self.defocus_disk_sample()
+        };
+
+        let ray_direction = pixel_sample - ray_origin;
         Ray {
-            origin: self.center,
+            origin: ray_origin,
             direction: ray_direction,
         }
+    }
+
+    fn defocus_disk_sample(&self) -> Point3 {
+        let p = random_in_unit_disk();
+        self.center + (p[0] * self.defocus_disk_u) + (p[1] * self.defocus_disk_v)
     }
 
     fn ray_color(&self, r: Ray, depth: i32, world: &dyn Hittable) -> Color {
