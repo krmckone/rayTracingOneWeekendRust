@@ -81,7 +81,7 @@ fn main() {
 
     camera.aspect_ratio = 16.0 / 9.0;
     camera.image_width = 1200;
-    camera.samples_per_pixel = 300;
+    camera.samples_per_pixel = 100;
     camera.max_depth = 50;
 
     camera.vfov = 20;
